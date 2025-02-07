@@ -6,3 +6,9 @@
 #
 
 from .find_home import *
+from .go_home import *
+from .charge import *
+from .find_spot import *
+from .go_to_spot import *
+from .clean_spot import *
+from .done_spot import *

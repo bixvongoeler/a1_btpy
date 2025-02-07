@@ -6,3 +6,4 @@
 #
 
 from .battery_less_than_30 import *
+from .spot_cleaning import *

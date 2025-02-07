@@ -33,28 +33,30 @@ from bt_library.common import ResultEnum as RE
 # Battery Path
 battery_path = bt.Sequence(
     [
-        bt.DebugMessage("1. Checking battery < 30", RE.FAILED),
-        bt.DebugMessage("2. Finding Home -> Store Home Path", RE.SUCCEEDED),
-        bt.DebugMessage("3. Going Home <- Recall Home Path", RE.SUCCEEDED),
-        bt.DebugMessage("4. Charging <-> [Battery Level, Charging]", RE.SUCCEEDED)
+        bt.BatteryLessThan30(),
+        bt.FindHome(),
+        bt.GoHome(),
+        bt.Charge()
     ]
 )
 
 # Cleaning Sub Paths
 spot_cleaning_path = bt.Sequence(
     [
-        bt.DebugMessage("1. Checking Spot Cleaning", RE.FAILED),
+        bt.SpotCleaning(),
+        bt.FindSpot(),
+        bt.GoToSpot(),
         bt.Timer(
             20,
-            bt.DebugMessage("Spot Clean Spot", RE.SUCCEEDED),
+            bt.CleanSpot(),
         ),
-        bt.DebugMessage("3. Done Spot -> Clear Spot", RE.SUCCEEDED)
+        bt.DoneSpot()
     ]
 )
 
 general_cleaning_path = bt.Sequence(
     [
-        bt.DebugMessage("1. Checking General Cleaning", RE.SUCCEEDED),
+        bt.DebugMessage("1. Checking General Cleaning", RE.FAILED),
         bt.Sequence(
             [
                 bt.Priority(

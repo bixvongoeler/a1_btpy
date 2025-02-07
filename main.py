@@ -24,14 +24,14 @@ current_blackboard.set_in_environment(BATTERY_LEVEL, 80)
 current_blackboard.set_in_environment(SPOT_CLEANING, False)
 current_blackboard.set_in_environment(GENERAL_CLEANING, True)
 current_blackboard.set_in_environment(DUSTY_SPOT_SENSOR, False)
-current_blackboard.set_in_environment(HOME_PATH, "")
+current_blackboard.set_in_environment(HOME_PATH, None)
 current_blackboard.set_in_environment(CHARGING, False)
 current_blackboard.set_in_environment(VACUUMING, False)
-current_blackboard.set_in_environment(SPOT_CLEANING_POSITION, (-1, -1))
+current_blackboard.set_in_environment(SPOT_CLEANING_POSITION, None)
 
-GRID_DIM_X = 45
-GRID_DIM_Y = 45
-CELL_SIZE = 15
+GRID_DIM_X = 135
+GRID_DIM_Y = 135
+CELL_SIZE = 5
 
 GRID_WIDTH = GRID_DIM_X * CELL_SIZE
 GRID_HEIGHT = GRID_DIM_Y * CELL_SIZE
@@ -56,7 +56,7 @@ color_dict = {
     "DARK_GREEN": (0, 100, 0),
 }
 current_blackboard.set_in_environment(HOME_POSITION, ((GRID_DIM_X // 2), 2))
-current_blackboard.set_in_environment(ROBOT_POSITION, ((GRID_DIM_X // 2), (GRID_DIM_X // 2)))
+current_blackboard.set_in_environment(ROBOT_POSITION, [(GRID_DIM_X // 2), (GRID_DIM_X // 2)])
 
 # Create the external game state
 cells = np.ndarray((GRID_DIM_X, GRID_DIM_Y, 3), dtype=int)
@@ -77,7 +77,6 @@ def redraw_grid():
     global surf
     for x in range(home_pos[0] - 2, home_pos[0] + 3):
         for y in range(home_pos[1] - 2, home_pos[1] + 3):
-            print(f"Placing home at {x}, {y}")
             if 0 <= x < GRID_DIM_X and 0 <= y < GRID_DIM_Y:
                 cells[x][y] = color_dict["DARK_GREEN"]
 
@@ -95,10 +94,11 @@ redraw_grid()
 
 
 # Draw the top bar
-simulation_speed = [200]
-is_playing = True
-is_dusty_spot = (False, 0, 0)
-is_general_cleaning = [False]
+simulation_speed = [1000]
+is_playing = False
+current_blackboard.set_in_environment(SPOT_CLEANING, False)
+current_blackboard.set_in_environment(SPOT_CLEANING_POSITION, None)
+current_blackboard.set_in_environment(GENERAL_CLEANING, False)
 
 gui_objects = {}
 game_objects = []
@@ -223,7 +223,7 @@ class Slider:
 
 class SpotSelector:
     def __init__(self):
-        self.radius = 3
+        self.radius = 2
         self.color = color_dict["BLUE"]
         self.active = True
 
@@ -234,36 +234,53 @@ class SpotSelector:
                 x = (pg.mouse.get_pos()[0] - BATTERY_WIDTH) // CELL_SIZE
                 y = (pg.mouse.get_pos()[1] - TOP_BAR_HEIGHT) // CELL_SIZE
                 if 0 <= x < GRID_DIM_X and 0 <= y < GRID_DIM_Y:
-                    global is_dusty_spot
-                    is_dusty_spot = (True, x, y)
+                    global current_blackboard
+                    current_blackboard.set_in_environment(SPOT_CLEANING_POSITION, (x, y))
+                    current_blackboard.set_in_environment(SPOT_CLEANING, True)
                     add_dirt_at(x, y, self.radius)
                     print(f"Dusty Spot: x:{x}, y:{y}")
-                    game_objects.remove(self)
-                    del self
+                    self.active = False
         else:
-            game_objects.remove(self)
-            del self
+            if not current_blackboard.get_in_environment(SPOT_CLEANING, False):
+                gui_objects["spot_cleaning_btn"].update_colors(color_dict["RED"])
+                gui_objects["spot_cleaning_btn"].button_text_surf = font.render('Spot Clean: Off', True, (20, 20, 20))
+                game_objects.remove(self)
+                del self
 
 class Roomba:
     def __init__(self):
         self.color = color_dict["BLACK"]
         self.head_color = (50, 50, 50)
-        self.x = GRID_DIM_X // 2
-        self.y = GRID_DIM_Y // 2
         self.radius = 1.5
         self.head_radius = 1.0
         self.blackboard = current_blackboard
+        self.x = self.blackboard.get_in_environment(ROBOT_POSITION, [-1, -1])[0]
+        if self.x == -1:
+            assert False, "Robot position not set"
+        self.y = self.blackboard.get_in_environment(ROBOT_POSITION, [-1, -1])[1]
+        if self.y == -1:
+            assert False, "Robot position not set"
         game_objects.append(self)
     def process(self):
-        if is_general_cleaning[0]:
-            self.blackboard.set_in_environment(GENERAL_CLEANING, True)
-        if is_dusty_spot[0]:
-            self.blackboard.set_in_environment(SPOT_CLEANING, True)
-            self.blackboard.set_in_environment(SPOT_CLEANING_POSITION, (is_dusty_spot[1], is_dusty_spot[2]))
-        for x in range(self.x - 1, self.x + 1):
-            for y in range(self.y - 1, self.y + 1):
+        pos = self.blackboard.get_in_environment(ROBOT_POSITION, [-1, -1])
+        assert 0 <= pos[0] < GRID_DIM_X, "Robot x position out of bounds"
+        assert 0 <= pos[1] < GRID_DIM_Y, "Robot y position out of bounds"
+        self.x = pos[0]
+        self.y = pos[1]
+
+        pg.draw.circle(screen, self.color, (self.x * CELL_SIZE + BATTERY_WIDTH + CELL_SIZE // 2,
+                                                   self.y * CELL_SIZE + TOP_BAR_HEIGHT + CELL_SIZE // 2),
+                                                   self.radius * CELL_SIZE)
+        pg.draw.circle(screen, self.head_color, (self.x * CELL_SIZE + BATTERY_WIDTH + CELL_SIZE // 2,
+                                                        self.y * CELL_SIZE + TOP_BAR_HEIGHT + CELL_SIZE // 2),
+                                                        self.head_radius * CELL_SIZE)
+
+    def clean_check_dirt(self):
+        for x in range(self.x - 1, self.x + 2):
+            for y in range(self.y - 1, self.y + 2):
                 if self.blackboard.get_in_environment(VACUUMING, False):
                     cells[x][y] = color_dict["WOOD_COLOR"]
+                    redraw_grid()
                 else:
                     found_dirt = False
                     if 0 <= x < GRID_DIM_X and 0 <= y < GRID_DIM_Y:
@@ -273,13 +290,8 @@ class Roomba:
                         self.blackboard.set_in_environment(DUSTY_SPOT_SENSOR, True)
                     else:
                         self.blackboard.set_in_environment(DUSTY_SPOT_SENSOR, False)
+        redraw_grid()
 
-        pg.draw.circle(screen, self.color, (self.x * CELL_SIZE + BATTERY_WIDTH + CELL_SIZE // 2,
-                                                   self.y * CELL_SIZE + TOP_BAR_HEIGHT + CELL_SIZE // 2),
-                                                   self.radius * CELL_SIZE)
-        pg.draw.circle(screen, self.head_color, (self.x * CELL_SIZE + BATTERY_WIDTH + CELL_SIZE // 2,
-                                                        self.y * CELL_SIZE + TOP_BAR_HEIGHT + CELL_SIZE // 2),
-                                                        self.head_radius * CELL_SIZE)
 
 # Helper FUnctions
 def play_pause():
@@ -300,14 +312,14 @@ def step_update():
     update_simulation()
 
 def add_dirt():
-    num_clusters = random.randint(3, 8)
+    num_clusters = random.randint(8, 16)
     for _ in range(num_clusters):
         # Choose a random center point for the cluster
         center_x = random.randint(0, GRID_DIM_X - 1)
         center_y = random.randint(0, GRID_DIM_Y - 1)
 
         # Add dirt in a small radius around the center
-        radius = random.randint(3, 5)
+        radius = random.randint(3, 8)
         for dx in range(-radius, radius + 1):
             for dy in range(-radius, radius + 1):
                 if dx * dx + dy * dy > radius * radius:
@@ -317,39 +329,42 @@ def add_dirt():
                     x = center_x + dx
                     y = center_y + dy
                     if 0 <= x < GRID_DIM_X and 0 <= y < GRID_DIM_Y:
-                        dirt_color = random.randint(155, 255)
+                        dirt_color = random.randint(100, 200)
                         cells[x][y] = (dirt_color, dirt_color, dirt_color)
     redraw_grid()
 
-def add_dirt_at(x, y, radius):
+def add_dirt_at(x, y, radius, is_spot=True):
     # Add dirt in a small radius around the center
     for dx in range(-radius, radius + 1):
         for dy in range(-radius, radius + 1):
             if dx * dx + dy * dy > radius * radius:
                 continue
             # Add some randomness to the cluster shape
-            if random.random() < 0.8:  # 70% chance to add dirt in radius
+            if random.random() < 0.75:  # 70% chance to add dirt in radius
                 i = x + dx
                 j = y + dy
-                if 0 <= x < GRID_DIM_X and 0 <= y < GRID_DIM_Y:
-                    dirt_color = random.randint(155, 255)
-                    cells[i][j] = (255, dirt_color, dirt_color)
+                if 0 <= i < GRID_DIM_X and 0 <= j < GRID_DIM_Y:
+                    dirt_color = random.randint(50, 150)
+                    if is_spot:
+                        cells[i][j] = (255, dirt_color, dirt_color)
+                    else:
+                        cells[i][j] = (dirt_color, dirt_color, dirt_color)
     redraw_grid()
 
 def spot_cleaning():
     global game_objects
-    if not is_dusty_spot[0]:
+    if not current_blackboard.get_in_environment(SPOT_CLEANING, False):
         game_objects.append(SpotSelector())
         gui_objects["spot_cleaning_btn"].update_colors(color_dict["GREEN"])
         gui_objects["spot_cleaning_btn"].button_text_surf = font.render('Spot Clean: On', True, (20, 20, 20))
 
 def general_cleaning():
-    if not is_general_cleaning[False]:
-        is_general_cleaning[0] = True
+    if not current_blackboard.get_in_environment(GENERAL_CLEANING, False):
+        current_blackboard.set_in_environment(GENERAL_CLEANING, True)
         gui_objects["general_cleaning_btn"].update_colors(color_dict["GREEN"])
         gui_objects["general_cleaning_btn"].button_text_surf = font.render('General Clean: On ', True, (20, 20, 20))
     else:
-        is_general_cleaning[0] = False
+        current_blackboard.set_in_environment(GENERAL_CLEANING, False)
         gui_objects["general_cleaning_btn"].update_colors(color_dict["RED"])
         gui_objects["general_cleaning_btn"].button_text_surf = font.render('General Clean: Off', True, (20, 20, 20))
 
@@ -400,7 +415,7 @@ def fit_gui_elements():
 # GUI Elements
 ELEM_HEIGHT = TOP_BAR_HEIGHT - (4 * 2)
 play_btn = Button(name="is_playing", x=4, y=4, width=75, height=ELEM_HEIGHT,
-                  color=color_dict["GREEN"], button_text='Playing', on_click_function=play_pause)
+                  color=color_dict["RED"], button_text='Paused', on_click_function=play_pause)
 step_btn = Button(name="step_btn", x=83, y=4, width=30, height=ELEM_HEIGHT,
                   color=color_dict["BLUE"], button_text='>>', on_click_function=step_update)
 add_dirt_btn = Button(name="add_dirt_btn", x=117, y=4, width=80, height=ELEM_HEIGHT,
@@ -418,8 +433,27 @@ speed_slider = Slider(name="speed_slider", x=509, y=4, width=SCREEN_WIDTH - 509 
 
 
 def update_simulation():
+    # Evaluate the behavior tree
     result = robot_behavior.evaluate(current_blackboard)
     print(result)
+
+    # Rescan for Dirt and Vacuum
+    robot.clean_check_dirt()
+
+    # Update the battery level
+    battery_level = current_blackboard.get_in_environment(BATTERY_LEVEL, 0)
+    battery_level -= 0.1
+    if current_blackboard.get_in_environment(VACUUMING, False):
+        battery_level -= 0.3
+    current_blackboard.set_in_environment(BATTERY_LEVEL, battery_level)
+
+
+    # if random.random() < 0.05:
+    #     # Add a random spot of dirt
+    #     x = random.randint(0, GRID_DIM_X - 1)
+    #     y = random.randint(0, GRID_DIM_Y - 1)
+    #     color = random.randint(50, 150)
+    #     cells[x][y] = (color, color, color)
 
 robot = Roomba()
 
