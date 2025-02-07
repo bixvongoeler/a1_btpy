@@ -7,6 +7,7 @@
 
 import bt as bt
 import bt_library as btl
+from bt_library.common import ResultEnum as RE
 
 # Instantiate the tree according to the assignment. The following are just examples.
 
@@ -22,10 +23,76 @@ import bt_library as btl
 # )
 
 # Example 3:
-tree_root = bt.Selection(
+# tree_root = bt.Selection(
+#     [
+#         bt.BatteryLessThan30(),
+#         bt.Timer(10, bt.FindHome())
+#     ]
+# )
+
+# Battery Path
+battery_path = bt.Sequence(
     [
-        bt.BatteryLessThan30(),
-        bt.Timer(10, bt.FindHome())
+        bt.DebugMessage("1. Checking battery < 30", RE.FAILED),
+        bt.DebugMessage("2. Finding Home -> Store Home Path", RE.SUCCEEDED),
+        bt.DebugMessage("3. Going Home <- Recall Home Path", RE.SUCCEEDED),
+        bt.DebugMessage("4. Charging <-> [Battery Level, Charging]", RE.SUCCEEDED)
+    ]
+)
+
+# Cleaning Sub Paths
+spot_cleaning_path = bt.Sequence(
+    [
+        bt.DebugMessage("1. Checking Spot Cleaning", RE.FAILED),
+        bt.Timer(
+            20,
+            bt.DebugMessage("Spot Clean Spot", RE.SUCCEEDED),
+        ),
+        bt.DebugMessage("3. Done Spot -> Clear Spot", RE.SUCCEEDED)
+    ]
+)
+
+general_cleaning_path = bt.Sequence(
+    [
+        bt.DebugMessage("1. Checking General Cleaning", RE.SUCCEEDED),
+        bt.Sequence(
+            [
+                bt.Priority(
+                    [
+                        bt.Sequence(
+                            [
+                                bt.DebugMessage("1. Checking Dusty Spot Sensor", RE.SUCCEEDED),
+                                bt.Timer(
+                                    35,
+                                    bt.DebugMessage("Dusty Clean Spot", RE.SUCCEEDED),
+                                ),
+                                bt.DebugMessage("3. Always Fails", RE.FAILED)
+                            ]
+                        ),
+                        bt.UntilFails(
+                            bt.DebugMessage("UntilFail Clean Floor", RE.SUCCEEDED)
+                        )
+                    ]
+                ),
+                bt.DebugMessage("2. Done General -> Clear General", RE.SUCCEEDED)
+            ]
+        )
+    ]
+)
+
+# Cleaning Path
+cleaning_path = bt.Selection(
+    [
+        spot_cleaning_path,
+        general_cleaning_path
+    ]
+)
+
+tree_root = bt.Priority(
+    [
+        battery_path,
+        cleaning_path,
+        bt.DebugMessage("3. Do Nothing", RE.SUCCEEDED)
     ]
 )
 

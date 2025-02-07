@@ -6,3 +6,5 @@
 #
 
 from .selection import *
+from .sequence import *
+from .priority import *
