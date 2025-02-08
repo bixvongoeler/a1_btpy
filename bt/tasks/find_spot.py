@@ -6,7 +6,7 @@
 #
 
 import bt_library as btl
-from ..globals import SPOT_CLEANING_PATH, SPOT_CLEANING_POSITION, ROBOT_POSITION
+from ..globals import SPOT_CLEANING_PATH, SPOT_CLEANING_POSITION, ROBOT_POSITION, SPOT_RADIUS
 
 
 class FindSpot(btl.Task):
@@ -28,5 +28,6 @@ class FindSpot(btl.Task):
 
         path_to_spot = [spot_pos[0] - my_pos[0], spot_pos[1] - my_pos[1]]
 
+        blackboard.set_in_environment(SPOT_CLEANING_POSITION, spot_pos)
         blackboard.set_in_environment(SPOT_CLEANING_PATH, path_to_spot)
         return self.report_succeeded(blackboard)

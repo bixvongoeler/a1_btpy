@@ -9,12 +9,12 @@ import bt_library as btl
 from ..globals import *
 
 
-class DoneSpot(btl.Task):
+class AlwaysFail(btl.Task):
     """
-    Implementation of the Task "Done Spot".
+    Implementation of the Task "Always Fail".
     """
     def run(self, blackboard: btl.Blackboard) -> btl.ResultEnum:
-        self.print_message('Done with Spot')
+        self.print_message('Always Fail After Dusty Spot')
 
         blackboard.set_in_environment(VACUUMING, False)
         blackboard.set_in_environment(SPOT_CLEANING, False)
@@ -24,4 +24,4 @@ class DoneSpot(btl.Task):
         blackboard.set_in_environment(SPOT_RADIUS, None)
         blackboard.set_in_environment(SPOT_CURRENT_RADIUS, None)
 
-        return self.report_succeeded(blackboard)
+        return self.report_failed(blackboard)

@@ -6,61 +6,59 @@
 #
 
 import bt_library as btl
-from ..globals import HOME_PATH, HOME_POSITION, ROBOT_POSITION
+from ..globals import *
 
 
 class GoHome(btl.Task):
     """
     Implementation of the Task "Go Home".
     """
+
     def run(self, blackboard: btl.Blackboard) -> btl.ResultEnum:
         self.print_message('Going Home')
 
-        # Recall Home Path
+        blackboard.set_in_environment(VACUUMING, False)
+
+        # Recall Spot Path
         path_home = blackboard.get_in_environment(HOME_PATH, None)
         if path_home is None:
             self.print_message('Home path not found')
             return self.report_failed(blackboard)
 
-        # Go Home
-        if self.move_home(blackboard):
+        robot_pos = blackboard.get_in_environment(ROBOT_POSITION, None)
+
+        # Go To Spot
+        dx, dy = self.get_next_move(robot_pos, path_home)
+
+        # Check if we are at the spot
+        if dx == 0 and dy == 0:
+            blackboard.set_in_environment(HOME_PATH, None)
             return self.report_succeeded(blackboard)
-        else:
-            return self.report_running(blackboard)
+
+        # Update position
+        print("robot position:", robot_pos)
+        if dx != 0:
+            print('robot dx = ', dx)
+            robot_pos[0] += dx
+        if dy != 0:
+            print('robot dy = ', dy)
+            robot_pos[1] += dy
+
+        # Update Blackboard
+        blackboard.set_in_environment(ROBOT_POSITION, robot_pos)
+        blackboard.set_in_environment(HOME_PATH, (path_home[0] - dx, path_home[1] - dy))
+        return self.report_running(blackboard)
 
     @staticmethod
-    def move_home(blackboard: btl.Blackboard) -> bool:
-        path_home = blackboard.get_in_environment(HOME_PATH, None)
-        robot_pos = blackboard.get_in_environment(ROBOT_POSITION, None)
-        assert path_home is not None
-        assert robot_pos is not None
-        if path_home[0] > 0:
-            print("Move Right")
-            robot_pos[0] += 1
-            path_home[0] -= 1
-            blackboard.set_in_environment(HOME_PATH, path_home)
-            blackboard.set_in_environment(ROBOT_POSITION, robot_pos)
-            return False
-        elif path_home[0] < 0:
-            print("Move Left")
-            robot_pos[0] -= 1
-            path_home[0] += 1
-            blackboard.set_in_environment(HOME_PATH, path_home)
-            blackboard.set_in_environment(ROBOT_POSITION, robot_pos)
-            return False
-        elif path_home[1] > 0:
-            print("Move Down")
-            robot_pos[1] += 1
-            path_home[1] -= 1
-            blackboard.set_in_environment(HOME_PATH, path_home)
-            blackboard.set_in_environment(ROBOT_POSITION, robot_pos)
-            return False
-        elif path_home[1] < 0:
-            print("Move Up")
-            robot_pos[1] -= 1
-            path_home[1] += 1
-            blackboard.set_in_environment(HOME_PATH, path_home)
-            blackboard.set_in_environment(ROBOT_POSITION, robot_pos)
-            return False
-        else:
-            return True
+    def get_next_move(current_pos, path_to_spot):
+        """
+        Determine the next move to reach the target position.
+        Args:
+            current_pos (list): Current position [x, y]
+            path_to_spot (list): Path to target [x, y]
+        Returns:
+            list: [dx, dy] representing the movement direction
+        """
+        dx = max(-1, min(1, path_to_spot[0]))
+        dy = max(-1, min(1, path_to_spot[1]))
+        return [dx, dy]

@@ -36,6 +36,6 @@ class UntilFails(Decorator):
 
         # Return running until child returns failure
         if result_child == ResultEnum.FAILED:
-            return self.report_failed(blackboard)
+            return self.report_succeeded(blackboard)
         else:
             return self.report_running(blackboard)

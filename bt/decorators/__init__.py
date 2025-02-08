@@ -7,3 +7,4 @@
 
 from .timer import *
 from .until_fails import *
+from .until_succeeds import *

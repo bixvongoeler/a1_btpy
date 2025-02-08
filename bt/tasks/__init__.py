@@ -12,3 +12,7 @@ from .find_spot import *
 from .go_to_spot import *
 from .clean_spot import *
 from .done_spot import *
+from .always_fail import *
+from .clean_floor import *
+from .done_general import *
+from .do_nothing import *

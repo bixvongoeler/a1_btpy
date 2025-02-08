@@ -1,6 +1,7 @@
 import bt_library as btl
-from ..globals import ROBOT_POSITION, VACUUMING, SPOT_CLEANING_POSITION
+from ..globals import *
 import math
+import random
 
 
 class CleanSpot(btl.Task):
@@ -8,31 +9,23 @@ class CleanSpot(btl.Task):
     Implementation of the Task "Clean Spot" with improved circular movement.
     The robot moves in a circle around the spot with a specified radius.
     """
-
-    def __init__(self, radius=3):
-        """
-        Initialize the CleanSpot task.
-
-        Args:
-            radius (int): Radius of the circular cleaning pattern (default: 1)
-        """
-        super().__init__()
-        self.radius = radius
-        self.current_angle = 0  # Track the current angle for circular movement
-
-    def get_target_position(self, spot_pos, angle):
+    @staticmethod
+    def get_target_position(spot_pos, angle, current_radius, room_dimensions, robot_radius):
         """
         Calculate the target position on the circle based on the current angle.
 
         Args:
             spot_pos (list): Center position [x, y]
             angle (float): Current angle in radians
+            current_radius (float): Current radius of the circle
+            room_dimensions (list): Dimensions of the room [width, height]
+            robot_radius (float): Radius of the robot
 
         Returns:
             list: Target position (x, y)
         """
-        x = spot_pos[0] + round(self.radius * math.cos(angle))
-        y = spot_pos[1] + round(self.radius * math.sin(angle))
+        x = max(math.ceil(robot_radius), min((spot_pos[0] + round(current_radius * math.cos(angle))), room_dimensions[0] - 1 - math.ceil(robot_radius)))
+        y = max(math.ceil(robot_radius), min((spot_pos[1] + round(current_radius * math.sin(angle))), room_dimensions[1] - 1 - math.ceil(robot_radius)))
         return [x, y]
 
     @staticmethod
@@ -45,21 +38,11 @@ class CleanSpot(btl.Task):
             target_pos (list): Target position [x, y]
 
         Returns:
-            tuple: (dx, dy) representing the movement direction
+            list: [dx, dy] representing the movement direction
         """
-        dx = 0
-        dy = 0
-
-        if current_pos[0] < target_pos[0]:
-            dx = 1
-        elif current_pos[0] > target_pos[0]:
-            dx = -1
-
-        if current_pos[1] < target_pos[1]:
-            dy = 1
-        elif current_pos[1] > target_pos[1]:
-            dy = -1
-
+        dx = max(-1, min(1, target_pos[0] - current_pos[0]))
+        dy = max(-1, min(1, target_pos[1] - current_pos[1]))
+        print(f'Current Position: {current_pos}, Target Position: {target_pos}, dx: {dx}, dy: {dy}')
         return [dx, dy]
 
     def run(self, blackboard: btl.Blackboard) -> btl.ResultEnum:
@@ -72,35 +55,35 @@ class CleanSpot(btl.Task):
         # Get current positions
         robot_pos = blackboard.get_in_environment(ROBOT_POSITION, None)
         spot_pos = blackboard.get_in_environment(SPOT_CLEANING_POSITION, None)
-
-        if robot_pos is None or spot_pos is None:
-            return self.report_failed(blackboard)
-
-        # If at spot center, move to start of circle
-        if robot_pos[0] == spot_pos[0] and robot_pos[1] == spot_pos[1]:
-            robot_pos[1] -= self.radius  # Move up to start position
-            blackboard.set_in_environment(ROBOT_POSITION, robot_pos)
-            self.current_angle = -math.pi / 2  # Start at top of circle
-            return self.report_succeeded(blackboard)
+        room_dimensions = blackboard.get_in_environment(ROOM_DIMENSIONS, None)
+        robot_radius = blackboard.get_in_environment(MY_RADIUS, None)
+        # Get spot parameters
+        spot_radius = blackboard.get_in_environment(SPOT_RADIUS, None)
+        current_radius = blackboard.get_in_environment(SPOT_CURRENT_RADIUS, None)
+        current_angle = blackboard.get_in_environment(SPOT_CURRENT_ANGLE, None)
+        if current_angle is None:
+            current_angle = 0
 
         # Calculate target position on circle
-        target_pos = self.get_target_position(spot_pos, self.current_angle)
+        target_pos = self.get_target_position(spot_pos, current_angle, current_radius, room_dimensions, robot_radius)
 
-        # If at target position, update angle for next position
-        if robot_pos[0] == target_pos[0] and robot_pos[1] == target_pos[1]:
-            self.current_angle = (self.current_angle + math.pi / 4) % (2 * math.pi)
-            target_pos = self.get_target_position(spot_pos, self.current_angle)
-
-        # Get next move direction
+        # Calculate next move
         dx, dy = self.get_next_move(robot_pos, target_pos)
 
-        # Update position
-        if dx != 0:
-            robot_pos[0] += dx
-            print("Move", "Right" if dx > 0 else "Left")
-        elif dy != 0:
-            robot_pos[1] += dy
-            print("Move", "Down" if dy > 0 else "Up")
+        # Check if we are at the target position and update angle and radius if so
+        if dx == 0 and dy == 0:
+            current_angle = (current_angle + math.pi / 16) % (2 * math.pi)
+            blackboard.set_in_environment(SPOT_CURRENT_ANGLE, current_angle)
+            if current_radius <= spot_radius + 1:
+                # current_radius += blackboard.get_in_environment(SPOT_RADIUS, 3) / 80
+                current_radius += 0.006 * current_radius
+                blackboard.set_in_environment(SPOT_CURRENT_RADIUS, current_radius)
+            target_pos = self.get_target_position(spot_pos, current_angle, current_radius, room_dimensions, robot_radius)
+            dx, dy = self.get_next_move(robot_pos, target_pos)
 
-        blackboard.set_in_environment(ROBOT_POSITION, robot_pos)
-        return self.report_succeeded(blackboard)
+        # Update position
+        blackboard.set_in_environment(ROBOT_POSITION, [robot_pos[0] + dx, robot_pos[1] + dy])
+        if current_radius >= spot_radius + 0.5:
+            return self.report_succeeded(blackboard)
+        else:
+            return self.report_running(blackboard)

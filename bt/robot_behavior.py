@@ -46,37 +46,33 @@ spot_cleaning_path = bt.Sequence(
         bt.SpotCleaning(),
         bt.FindSpot(),
         bt.GoToSpot(),
-        bt.Timer(
-            20,
-            bt.CleanSpot(),
-        ),
+        bt.UntilSucceeds(bt.CleanSpot()),
         bt.DoneSpot()
     ]
 )
 
 general_cleaning_path = bt.Sequence(
     [
-        bt.DebugMessage("1. Checking General Cleaning", RE.FAILED),
+        bt.GeneralCleaning(),
         bt.Sequence(
             [
                 bt.Priority(
                     [
                         bt.Sequence(
                             [
-                                bt.DebugMessage("1. Checking Dusty Spot Sensor", RE.SUCCEEDED),
-                                bt.Timer(
-                                    35,
-                                    bt.DebugMessage("Dusty Clean Spot", RE.SUCCEEDED),
+                                bt.DustySpot(),
+                                bt.UntilSucceeds(
+                                    bt.CleanSpot()
                                 ),
-                                bt.DebugMessage("3. Always Fails", RE.FAILED)
+                                bt.AlwaysFail()
                             ]
                         ),
                         bt.UntilFails(
-                            bt.DebugMessage("UntilFail Clean Floor", RE.SUCCEEDED)
+                            bt.CleanFloor()
                         )
                     ]
                 ),
-                bt.DebugMessage("2. Done General -> Clear General", RE.SUCCEEDED)
+                bt.DoneGeneral()
             ]
         )
     ]
@@ -94,7 +90,7 @@ tree_root = bt.Priority(
     [
         battery_path,
         cleaning_path,
-        bt.DebugMessage("3. Do Nothing", RE.SUCCEEDED)
+        bt.DoNothing()
     ]
 )
 

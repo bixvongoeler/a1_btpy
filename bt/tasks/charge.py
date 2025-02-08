@@ -19,6 +19,7 @@ class Charge(btl.Task):
         # Set Charging to True
         blackboard.set_in_environment('CHARGING', True)
 
+
         # Recall Battery Level
         battery_level = blackboard.get_in_environment('BATTERY_LEVEL', None)
         if battery_level is None:
@@ -27,9 +28,10 @@ class Charge(btl.Task):
 
         # Charging logic
         if battery_level < 100:
-            battery_level += 1
+            battery_level += 0.1
             blackboard.set_in_environment('BATTERY_LEVEL', battery_level)
             return self.report_running(blackboard)
         else:
             self.print_message('Battery fully charged')
+            blackboard.set_in_environment('CHARGING', False)
             return self.report_succeeded(blackboard)

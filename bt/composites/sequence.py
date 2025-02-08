@@ -40,4 +40,4 @@ class Sequence(btl.Composite):
             if result_child == btl.ResultEnum.RUNNING:
                 return self.report_running(blackboard, child_position)
 
-        return self.report_running(blackboard, 0)
+        return self.report_succeeded(blackboard, 0)

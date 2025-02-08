@@ -6,7 +6,7 @@
 #
 
 import bt_library as btl
-from ..globals import HOME_PATH, HOME_POSITION
+from ..globals import *
 
 
 class FindHome(btl.Task):
@@ -27,6 +27,13 @@ class FindHome(btl.Task):
             return self.report_failed(blackboard)
 
         path_home = [home_pos[0] - my_pos[0], home_pos[1] - my_pos[1]]
+
+        # If on the way to spot reset spot path with directions from home
+        path_to_spot = blackboard.get_in_environment(SPOT_CLEANING_PATH, None)
+        if path_to_spot is not None:
+            spot_position = blackboard.get_in_environment('SPOT_CLEANING_POSITION', None)
+            new_path_to_spot = [spot_position[0] - home_pos[0], spot_position[1] - home_pos[1]]
+            blackboard.set_in_environment(SPOT_CLEANING_PATH, new_path_to_spot)
 
         blackboard.set_in_environment(HOME_PATH, path_home)
         return self.report_succeeded(blackboard)
