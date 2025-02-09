@@ -19,6 +19,16 @@ class CleanFloor(btl.Task):
                     need_to_clean.append([i + round(2 * robot_radius), j])
                 else:
                     need_to_clean.append([math.floor(room_dimensions[0] - 1 - robot_radius), j])
+
+        top_left = [math.ceil(robot_radius), math.ceil(robot_radius)]
+        bottom_left = [math.ceil(robot_radius), math.floor(room_dimensions[1] - 1 - robot_radius)]
+        bottom_right = [math.floor(room_dimensions[0] - 1 - robot_radius), math.floor(room_dimensions[1] - 1 - robot_radius)]
+        top_right = [math.floor(room_dimensions[0] - 1 - robot_radius), math.ceil(robot_radius)]
+        need_to_clean.append(top_right)
+        need_to_clean.append(top_left)
+        need_to_clean.append(bottom_left)
+        need_to_clean.append(bottom_right)
+        need_to_clean.append(top_right)
         need_to_clean.append([room_dimensions[0] // 2, room_dimensions[1] // 2])
         return need_to_clean
 
@@ -62,6 +72,8 @@ class CleanFloor(btl.Task):
         if dx == 0 and dy == 0:
             need_to_clean.pop(0)
             dx, dy = self.get_next_move(robot_pos, target_pos)
+
+        blackboard.set_in_environment(ROBOT_DIRECTION, (dx, dy))
 
         robot_pos[0] += dx
         robot_pos[1] += dy

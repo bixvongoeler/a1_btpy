@@ -62,7 +62,7 @@ general_cleaning_path = bt.Sequence(
                             [
                                 bt.DustySpot(),
                                 bt.UntilSucceeds(
-                                    bt.CleanSpot()
+                                    bt.DustyCleanSpot()
                                 ),
                                 bt.AlwaysFail()
                             ]

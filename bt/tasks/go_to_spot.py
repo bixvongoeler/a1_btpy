@@ -6,7 +6,7 @@
 #
 
 import bt_library as btl
-from ..globals import SPOT_CLEANING_PATH, SPOT_CLEANING_POSITION, ROBOT_POSITION
+from ..globals import SPOT_CLEANING_PATH, SPOT_CLEANING_POSITION, ROBOT_POSITION, ROBOT_DIRECTION
 
 
 class GoToSpot(btl.Task):
@@ -40,6 +40,8 @@ class GoToSpot(btl.Task):
         if dy != 0:
             print('robot dy = ', dy)
             robot_pos[1] += dy
+
+        blackboard.set_in_environment(ROBOT_DIRECTION, (dx, dy))
 
         # Update Blackboard
         blackboard.set_in_environment(ROBOT_POSITION, robot_pos)

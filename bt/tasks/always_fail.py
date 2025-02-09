@@ -17,11 +17,9 @@ class AlwaysFail(btl.Task):
         self.print_message('Always Fail After Dusty Spot')
 
         blackboard.set_in_environment(VACUUMING, False)
-        blackboard.set_in_environment(SPOT_CLEANING, False)
-        blackboard.set_in_environment(SPOT_CLEANING_POSITION, None)
-        blackboard.set_in_environment(SPOT_CLEANING_PATH, None)
-        blackboard.set_in_environment(SPOT_CURRENT_ANGLE, None)
-        blackboard.set_in_environment(SPOT_RADIUS, None)
-        blackboard.set_in_environment(SPOT_CURRENT_RADIUS, None)
+        blackboard.set_in_environment(DUSTY_SPOT_CLEANING_POSITION, None)
+        blackboard.set_in_environment(DUSTY_SPOT_CURRENT_ANGLE, None)
+        blackboard.set_in_environment(DUSTY_SPOT_RADIUS, None)
+        blackboard.set_in_environment(DUSTY_SPOT_CURRENT_RADIUS, None)
 
         return self.report_failed(blackboard)

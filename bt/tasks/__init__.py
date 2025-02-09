@@ -16,3 +16,4 @@ from .always_fail import *
 from .clean_floor import *
 from .done_general import *
 from .do_nothing import *
+from .dusty_clean_spot import *

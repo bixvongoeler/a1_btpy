@@ -76,14 +76,15 @@ class CleanSpot(btl.Task):
             blackboard.set_in_environment(SPOT_CURRENT_ANGLE, current_angle)
             if current_radius <= spot_radius + 1:
                 # current_radius += blackboard.get_in_environment(SPOT_RADIUS, 3) / 80
-                current_radius += 0.006 * current_radius
+                current_radius += 0.003 * spot_radius
                 blackboard.set_in_environment(SPOT_CURRENT_RADIUS, current_radius)
             target_pos = self.get_target_position(spot_pos, current_angle, current_radius, room_dimensions, robot_radius)
             dx, dy = self.get_next_move(robot_pos, target_pos)
 
+        blackboard.set_in_environment(ROBOT_DIRECTION, (dx, dy))
         # Update position
         blackboard.set_in_environment(ROBOT_POSITION, [robot_pos[0] + dx, robot_pos[1] + dy])
-        if current_radius >= spot_radius + 0.5:
+        if current_radius >= spot_radius * 0.8:
             return self.report_succeeded(blackboard)
         else:
             return self.report_running(blackboard)

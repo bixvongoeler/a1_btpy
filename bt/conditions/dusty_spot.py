@@ -19,10 +19,10 @@ class DustySpot(btl.Condition):
         if blackboard.get_in_environment(DUSTY_SPOT_SENSOR, False):
             self.print_message('Dusty Spot Detected')
             current_pos = blackboard.get_in_environment(ROBOT_POSITION, None)
-            blackboard.set_in_environment(SPOT_CLEANING_POSITION, current_pos)
-            blackboard.set_in_environment(SPOT_CURRENT_RADIUS, 8)
-            blackboard.set_in_environment(SPOT_RADIUS, 24)
-            blackboard.set_in_environment(SPOT_CURRENT_ANGLE, 0)
+            blackboard.set_in_environment(DUSTY_SPOT_CLEANING_POSITION, current_pos)
+            blackboard.set_in_environment(DUSTY_SPOT_CURRENT_RADIUS, 8)
+            blackboard.set_in_environment(DUSTY_SPOT_RADIUS, 24)
+            blackboard.set_in_environment(DUSTY_SPOT_CURRENT_ANGLE, 0)
             return self.report_succeeded(blackboard)
         else:
             return self.report_failed(blackboard)

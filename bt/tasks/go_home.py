@@ -44,6 +44,8 @@ class GoHome(btl.Task):
             print('robot dy = ', dy)
             robot_pos[1] += dy
 
+        blackboard.set_in_environment(ROBOT_DIRECTION, (dx, dy))
+
         # Update Blackboard
         blackboard.set_in_environment(ROBOT_POSITION, robot_pos)
         blackboard.set_in_environment(HOME_PATH, (path_home[0] - dx, path_home[1] - dy))
