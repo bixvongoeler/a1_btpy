@@ -34,7 +34,7 @@ current_blackboard.set_in_environment(HOME_POSITION,
                                       ((GRID_DIM_X - (HOME_SIZE // 2)), (GRID_DIM_Y - (HOME_SIZE // 2))))
 current_blackboard.set_in_environment(ROBOT_POSITION,
                                       [round(GRID_DIM_X - (HOME_SIZE // 2)), round(GRID_DIM_Y - (HOME_SIZE // 2))])
-current_blackboard.set_in_environment(ROBOT_DIRECTION, (0, 1))
+current_blackboard.set_in_environment(ROBOT_DIRECTION, (-1, 0))
 
 # Init Window and Clock
 pg.init()
@@ -56,7 +56,7 @@ fast_symbol = sim_globals.symbol_font.render(" ", True, (255, 150, 150))
 home_text = sim_globals.font.render('Home', True, (255, 255, 255))
 
 # Step Button (Simulates the robot for a set number of iterations rather than running the simulation in real time)
-STEP_SIZE = 5
+STEP_SIZE = 1
 def step_update():
     """
     Runs the Behavioral Tree STEP_SIZE iterations.

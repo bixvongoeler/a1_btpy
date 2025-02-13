@@ -7,28 +7,9 @@
 
 import bt as bt
 import bt_library as btl
-from bt_library.common import ResultEnum as RE
 
-# Instantiate the tree according to the assignment. The following are just examples.
-
-# Example 1:
-# tree_root = bt.Timer(5, bt.FindHome())
-
-# Example 2:
-# tree_root = bt.Selection(
-#     [
-#         BatteryLessThan30(),
-#         FindHome()
-#     ]
-# )
-
-# Example 3:
-# tree_root = bt.Selection(
-#     [
-#         bt.BatteryLessThan30(),
-#         bt.Timer(10, bt.FindHome())
-#     ]
-# )
+# Grid size is quite small, so we need to increase the timer length by a multiplier
+TIMER_MULTIPLIER = 5
 
 # Battery Path
 battery_path = bt.Sequence(
@@ -40,17 +21,18 @@ battery_path = bt.Sequence(
     ]
 )
 
-# Cleaning Sub Paths
+# Spot Cleaning Sub Paths
 spot_cleaning_path = bt.Sequence(
     [
         bt.SpotCleaning(),
         bt.FindSpot(),
         bt.GoToSpot(),
-        bt.UntilSucceeds(bt.CleanSpot()),
+        bt.Timer(20 * TIMER_MULTIPLIER, bt.CleanSpot()), # Needs to be higher than 20 as the grid size is quite small
         bt.DoneSpot()
     ]
 )
 
+# General Cleaning
 general_cleaning_path = bt.Sequence(
     [
         bt.GeneralCleaning(),
@@ -61,7 +43,8 @@ general_cleaning_path = bt.Sequence(
                         bt.Sequence(
                             [
                                 bt.DustySpot(),
-                                bt.UntilSucceeds(
+                                bt.Timer(
+                                    35 * TIMER_MULTIPLIER,
                                     bt.DustyCleanSpot()
                                 ),
                                 bt.AlwaysFail()
@@ -86,6 +69,8 @@ cleaning_path = bt.Selection(
     ]
 )
 
+
+# Create Root Node from our Sub Trees
 tree_root = bt.Priority(
     [
         battery_path,

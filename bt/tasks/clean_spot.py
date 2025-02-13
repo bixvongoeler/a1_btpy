@@ -40,8 +40,8 @@ class CleanSpot(btl.Task):
         Returns:
             list: [dx, dy] representing the movement direction
         """
-        dx = max(-1, min(1, target_pos[0] - current_pos[0]))
-        dy = max(-1, min(1, target_pos[1] - current_pos[1]))
+        dx = max(-3, min(3, target_pos[0] - current_pos[0]))
+        dy = max(-3, min(3, target_pos[1] - current_pos[1]))
         print(f'Current Position: {current_pos}, Target Position: {target_pos}, dx: {dx}, dy: {dy}')
         return [dx, dy]
 
@@ -76,7 +76,7 @@ class CleanSpot(btl.Task):
             blackboard.set_in_environment(SPOT_CURRENT_ANGLE, current_angle)
             if current_radius <= spot_radius + 1:
                 # current_radius += blackboard.get_in_environment(SPOT_RADIUS, 3) / 80
-                current_radius += 0.003 * spot_radius
+                current_radius += 0.01 * spot_radius
                 blackboard.set_in_environment(SPOT_CURRENT_RADIUS, current_radius)
             target_pos = self.get_target_position(spot_pos, current_angle, current_radius, room_dimensions, robot_radius)
             dx, dy = self.get_next_move(robot_pos, target_pos)

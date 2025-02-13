@@ -6,11 +6,12 @@ import random
 
 class CleanFloor(btl.Task):
     """
-    Implementation of the Task "Clean Spot" with improved circular movement.
+    Implementation of the Task "Clean Spot"
     """
     @staticmethod
     def calc_new_cleaning_route(room_dimensions, robot_radius):
         need_to_clean = []
+        # Generate a new cleaning route
         for i in range(round(robot_radius), math.ceil(room_dimensions[0] - 1 - robot_radius), round(robot_radius * 4)):
             for j in range(math.ceil(robot_radius), math.floor(room_dimensions[1] - 1 - robot_radius), round(robot_radius)):
                 need_to_clean.append([i, j])
@@ -19,7 +20,7 @@ class CleanFloor(btl.Task):
                     need_to_clean.append([i + round(2 * robot_radius), j])
                 else:
                     need_to_clean.append([math.floor(room_dimensions[0] - 1 - robot_radius), j])
-
+        # Add corners to the cleaning route
         top_left = [math.ceil(robot_radius), math.ceil(robot_radius)]
         bottom_left = [math.ceil(robot_radius), math.floor(room_dimensions[1] - 1 - robot_radius)]
         bottom_right = [math.floor(room_dimensions[0] - 1 - robot_radius), math.floor(room_dimensions[1] - 1 - robot_radius)]
@@ -29,6 +30,7 @@ class CleanFloor(btl.Task):
         need_to_clean.append(bottom_left)
         need_to_clean.append(bottom_right)
         need_to_clean.append(top_right)
+        # Add center to the cleaning route
         need_to_clean.append([room_dimensions[0] // 2, room_dimensions[1] // 2])
         return need_to_clean
 

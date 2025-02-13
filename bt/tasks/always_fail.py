@@ -14,12 +14,14 @@ class AlwaysFail(btl.Task):
     Implementation of the Task "Always Fail".
     """
     def run(self, blackboard: btl.Blackboard) -> btl.ResultEnum:
-        self.print_message('Always Fail After Dusty Spot')
+        self.print_message('Always Fail After Dusty Spot Cleaning')
 
+        # Reset the blackboard variables related to the Dusty Spot Cleaning
         blackboard.set_in_environment(VACUUMING, False)
         blackboard.set_in_environment(DUSTY_SPOT_CLEANING_POSITION, None)
         blackboard.set_in_environment(DUSTY_SPOT_CURRENT_ANGLE, None)
         blackboard.set_in_environment(DUSTY_SPOT_RADIUS, None)
         blackboard.set_in_environment(DUSTY_SPOT_CURRENT_RADIUS, None)
 
+        # Always fail
         return self.report_failed(blackboard)

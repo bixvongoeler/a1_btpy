@@ -13,7 +13,7 @@ from bt_library.tree_node import TreeNode
 
 class UntilSucceeds(Decorator):
     """
-    Specific implementation of the UntilFails decorator.
+    Specific implementation of the UntilSucceeds decorator.
     """
 
     def __init__(self, child: TreeNode):

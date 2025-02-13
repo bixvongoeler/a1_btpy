@@ -16,6 +16,7 @@ class DoneSpot(btl.Task):
     def run(self, blackboard: btl.Blackboard) -> btl.ResultEnum:
         self.print_message('Done with Spot')
 
+        # Reset the environment variables related to spot cleaning
         blackboard.set_in_environment(VACUUMING, False)
         blackboard.set_in_environment(SPOT_CLEANING, False)
         blackboard.set_in_environment(SPOT_CLEANING_POSITION, None)

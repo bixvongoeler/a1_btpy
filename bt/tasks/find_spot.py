@@ -16,16 +16,19 @@ class FindSpot(btl.Task):
     def run(self, blackboard: btl.Blackboard) -> btl.ResultEnum:
         self.print_message('Looking for Spot')
 
+        # Get the spot position from the blackboard
         spot_pos = blackboard.get_in_environment(SPOT_CLEANING_POSITION, None)
         if spot_pos is None:
             self.print_message('Spot position not found')
             return self.report_failed(blackboard)
 
+        # Get the robot position from the blackboard
         my_pos = blackboard.get_in_environment(ROBOT_POSITION, None)
         if my_pos is None:
             self.print_message('Robot position not found')
             return self.report_failed(blackboard)
 
+        # Calculate the path to the spot
         path_to_spot = [spot_pos[0] - my_pos[0], spot_pos[1] - my_pos[1]]
 
         blackboard.set_in_environment(SPOT_CLEANING_POSITION, spot_pos)

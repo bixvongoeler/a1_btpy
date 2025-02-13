@@ -16,16 +16,19 @@ class FindHome(btl.Task):
     def run(self, blackboard: btl.Blackboard) -> btl.ResultEnum:
         self.print_message('Looking for a home')
 
+        # Get home position from the environment
         home_pos = blackboard.get_in_environment(HOME_POSITION, None)
         if home_pos is None:
             self.print_message('Home position not found')
             return self.report_failed(blackboard)
 
+        # Get robot position from the environment
         my_pos = blackboard.get_in_environment('ROBOT_POSITION', None)
         if my_pos is None:
             self.print_message('Robot position not found')
             return self.report_failed(blackboard)
 
+        # Calculate the path to home
         path_home = [home_pos[0] - my_pos[0], home_pos[1] - my_pos[1]]
 
         # If on the way to spot reset spot path with directions from home

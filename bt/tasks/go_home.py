@@ -36,12 +36,9 @@ class GoHome(btl.Task):
             return self.report_succeeded(blackboard)
 
         # Update position
-        print("robot position:", robot_pos)
         if dx != 0:
-            print('robot dx = ', dx)
             robot_pos[0] += dx
         if dy != 0:
-            print('robot dy = ', dy)
             robot_pos[1] += dy
 
         blackboard.set_in_environment(ROBOT_DIRECTION, (dx, dy))

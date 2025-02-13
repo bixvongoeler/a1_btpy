@@ -16,7 +16,9 @@ class DustySpot(btl.Condition):
     def run(self, blackboard: btl.Blackboard) -> btl.ResultEnum:
         self.print_message('Checking Dusty Spot')
 
+        # Check if the Dusty Spot sensor is activated
         if blackboard.get_in_environment(DUSTY_SPOT_SENSOR, False):
+            # if so, set the Dusty Spot position and radius
             self.print_message('Dusty Spot Detected')
             current_pos = blackboard.get_in_environment(ROBOT_POSITION, None)
             blackboard.set_in_environment(DUSTY_SPOT_CLEANING_POSITION, current_pos)

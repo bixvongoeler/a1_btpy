@@ -6,7 +6,7 @@ import random
 
 class DustyCleanSpot(btl.Task):
     """
-    Implementation of the Task "Clean Spot" for Dusty Spots with improved circular movement.
+    Implementation of the Task "Clean Spot" for Dusty Spots
     The robot moves in a circle around the spot with a specified radius.
     """
     @staticmethod

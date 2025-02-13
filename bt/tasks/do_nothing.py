@@ -14,6 +14,6 @@ class DoNothing(btl.Task):
     Implementation of the Task "Do Nothing".
     """
     def run(self, blackboard: btl.Blackboard) -> btl.ResultEnum:
-        self.print_message('Waiting For Next Task')
+        self.print_message('Do Nothing: Waiting For Next Task')
 
         return self.report_succeeded(blackboard)

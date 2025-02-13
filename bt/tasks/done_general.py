@@ -16,6 +16,7 @@ class DoneGeneral(btl.Task):
     def run(self, blackboard: btl.Blackboard) -> btl.ResultEnum:
         self.print_message('Done with General Clean')
 
+        # Set relevant blackboard variables to False
         blackboard.set_in_environment(VACUUMING, False)
         blackboard.set_in_environment(GENERAL_CLEANING, False)
         blackboard.set_in_environment(NEED_TO_CLEAN, None)
