@@ -1,8 +1,6 @@
 # CS131 A1 Behavior Trees
 #### Bix von Goeler
 
-_A Project for the Class CS131 Artificial Intellegence at Tufts University_
-
 This project implements the provided behavior tree, adding to it by providing a simple GUI and visualization of the simulation state. It uses a hierarchical behavior tree to control the robot in a simulated discrete grid environment, and perform user requested actions such as spot cleaning or general room cleaning.
 
 ## Requirements
